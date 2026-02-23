@@ -11,8 +11,8 @@ android {
         applicationId = "com.DefaultCompany.Tahmin11"
         minSdk = 24
         targetSdk = 35
-        versionCode = 115
-        versionName = "115"
+        versionCode = 116
+        versionName = "116"
     }
 
     buildTypes {
