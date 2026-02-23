@@ -11185,6 +11185,93 @@ function restartWordGame() {
 </script>
 
     <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
+    <script>
+    // --- PROFESSIONAL AD MANAGER WITH TIMEOUT PROTECTION ---
+    var AdManager = {
+        adTimeout: null,
+
+        // Start a safety timer to resume game if ad fails to report back
+        startTimeout: function() {
+            if (this.adTimeout) clearTimeout(this.adTimeout);
+            this.adTimeout = setTimeout(function() {
+                console.log("⚠️ Ad System Timeout - Force Resuming Game");
+                if(window.onAdClosed) window.onAdClosed();
+            }, 6000); // 6 seconds tolerance
+        },
+
+        cancelTimeout: function() {
+            if (this.adTimeout) {
+                clearTimeout(this.adTimeout);
+                this.adTimeout = null;
+            }
+        },
+
+        showInterstitialAd: function(callback) {
+            window.pendingAdCallback = callback;
+
+            if (typeof Android !== 'undefined' && Android.showInterstitial) {
+                console.log("🎬 Requesting Interstitial Ad...");
+                this.startTimeout();
+                Android.showInterstitial(null);
+            } else {
+                console.warn("Android interface not found. Mocking Ad.");
+                if (callback) callback();
+            }
+        },
+
+        showRewardedAd: function(onReward) {
+            window.pendingRewardCallback = onReward;
+
+            if (typeof Android !== 'undefined' && Android.showRewardedAd) {
+                console.log("🎁 Requesting Rewarded Ad...");
+                this.startTimeout();
+                Android.showRewardedAd(null);
+            } else {
+                console.warn("Android interface not found. Mocking Reward.");
+                if (onReward) onReward();
+            }
+        },
+
+        // Called when user earns a reward
+        onReward: function() {
+            console.log("💎 Reward Granted from Native!");
+            this.cancelTimeout();
+            if (window.pendingRewardCallback) {
+                window.pendingRewardCallback();
+                window.pendingRewardCallback = null;
+            }
+        }
+    };
+
+    // --- NATIVE CALLBACKS ---
+
+    // Called by Android when Ad is closed, dismissed, or failed
+    window.onAdClosed = function() {
+        console.log("✅ Ad Closed / Completed.");
+        AdManager.cancelTimeout();
+
+        if (window.pendingAdCallback) {
+            window.pendingAdCallback();
+            window.pendingAdCallback = null;
+        }
+
+        // Clean up reward callback if it wasn't triggered
+        if (window.pendingRewardCallback) {
+             window.pendingRewardCallback = null;
+        }
+    };
+
+    // Called by Android when Reward is earned
+    window.grantReward = function() {
+        AdManager.onReward();
+    };
+
+    // Called by AdMob/Yandex Native logic if needed
+    window.onAdLoaded = function() {
+        // Optional: Hide loading spinner if you have one
+    };
+    </script>
 </body>
 
 </html>
